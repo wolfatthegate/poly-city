@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Poly City — Chapter 0</title>
+    <script type="module" crossorigin src="./assets/index-BydYAt6R.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BIGLE6ON.css">
+  </head>
+  <body>
+    <canvas id="viewport"></canvas>
+
+    <!-- Sights. Everything in here is read against the 3D view rather than
+         against the HUD's panels: the crosshair marks where a shot lands, the
+         scope is the sight picture, and the lock bracket is drawn at a
+         projected world position. So this layer is sized to the canvas exactly
+         rather than to #hud, whose box is shorter than the canvas on a phone
+         to keep the panels above the control deck. Sharing that box put the
+         crosshair 89px above the shot on a 390x844 screen. -->
+    <div id="view-overlay">
+      <div id="crosshair" class="hidden">
+        <span class="ch ch-t"></span>
+        <span class="ch ch-b"></span>
+        <span class="ch ch-l"></span>
+        <span class="ch ch-r"></span>
+        <span class="ch-dot"></span>
+      </div>
+
+      <!-- The sniper's scope: a circular mask + mil-dot reticle while zoomed
+           in (see Game._updateSniperScope(), HUD.setScope()), plus the
+           "hold breath" meter Shift draws down to steady the sway. -->
+      <div id="scope-overlay" class="hidden">
+        <div id="scope-reticle">
+          <span class="sr-line sr-v"></span>
+          <span class="sr-line sr-h"></span>
+          <span class="sr-tick sr-tick-v t1"></span>
+          <span class="sr-tick sr-tick-v t2"></span>
+          <span class="sr-tick sr-tick-v t3"></span>
+          <span class="sr-tick sr-tick-v t4"></span>
+          <span class="sr-tick sr-tick-h t1"></span>
+          <span class="sr-tick sr-tick-h t2"></span>
+          <span class="sr-tick sr-tick-h t3"></span>
+          <span class="sr-tick sr-tick-h t4"></span>
+          <span class="sr-dot"></span>
+        </div>
+        <div id="scope-steady-row">
+          <div id="scope-steady-label">HOLD SHIFT TO STEADY</div>
+          <div id="scope-steady-bar"><div id="scope-steady-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- F-16/Top-Gun style missile lock reticle: a bracket box the heli's
+           weapons drive onto whatever the seeker is tracking (see
+           Game._computeLockHudInfo()). Hidden until there's a candidate. Its
+           left/top come straight out of the camera's own projection, so it
+           belongs to this layer and not to the panels. -->
+      <div id="missile-lock" class="hidden">
+        <span class="lock-corner lock-tl"></span>
+        <span class="lock-corner lock-tr"></span>
+        <span class="lock-corner lock-bl"></span>
+        <span class="lock-corner lock-br"></span>
+        <div id="lock-text">TRACKING</div>
+      </div>
+    </div>
+
+    <!-- HUD overlay. All of it is pointer-events:none except the start screen. -->
+    <div id="hud">
+      <canvas id="minimap"></canvas>
+      <button id="map-button" type="button" title="City map (Tab)">MAP</button>
+      <div id="map-screen" class="hidden">
+        <div class="map-card">
+          <h2>POLY CITY</h2>
+          <canvas id="map-canvas"></canvas>
+          <p class="map-hint">Tab or click MAP to close</p>
+        </div>
+      </div>
+
+      <div id="radio" class="hidden">
+        <div id="radio-bars"><span></span><span></span><span></span></div>
+        <div id="radio-text">
+          <div id="radio-station">G-Funk Radio</div>
+          <div id="radio-track">NO SIGNAL</div>
+        </div>
+      </div>
+
+      <div id="speedo" class="panel">
+        <div class="speed-row">
+          <span id="speed-value">0</span>
+          <span id="speed-unit">km/h</span>
+        </div>
+        <div id="gear-row"><span id="gear">P</span></div>
+        <div id="throttle-bar"><div id="throttle-fill"></div></div>
+        <div id="car-type-row"><span id="car-type">Sedan</span></div>
+        <div id="nitro-row">
+          <div id="nitro-label">NITRO</div>
+          <div id="nitro-bar"><div id="nitro-fill"></div></div>
+        </div>
+        <div id="health-row">
+          <div id="health-label">HULL</div>
+          <div id="health-bar"><div id="health-fill"></div></div>
+        </div>
+        <div id="stamina-row" class="hidden">
+          <div id="stamina-label">STAMINA</div>
+          <div id="stamina-bar"><div id="stamina-fill"></div></div>
+        </div>
+        <div id="player-health-row" class="hidden">
+          <div id="player-health-label">HEALTH</div>
+          <div id="player-health-bar"><div id="player-health-fill"></div></div>
+        </div>
+      </div>
+
+      <div id="ammo" class="panel">
+        <div id="money">
+          <span class="money-mark">$</span><span id="money-value">0</span>
+        </div>
+        <div class="ammo-row">
+          <div id="weapon-icon"></div>
+          <span id="mag">30</span><span class="ammo-sep">/</span><span id="reserve">90</span>
+        </div>
+        <div id="weapon-name">ASSAULT RIFLE</div>
+        <div id="reload-hint" class="hidden">RELOADING…</div>
+      </div>
+
+      <div id="stats" class="panel">
+        <div><span class="k">Trash cans</span> <span id="targets-hit">0</span></div>
+        <div><span class="k">Ammo boxes</span> <span id="pickups-taken">0</span></div>
+        <div><span class="k">Nitro orbs</span> <span id="nitro-taken">0</span></div>
+        <div><span class="k">Weapons</span> <span id="weapons-found">1/3</span></div>
+      </div>
+
+      <div id="controls" class="panel">
+        <div class="ctl-title">CONTROLS</div>
+        <ul id="controls-list"></ul>
+      </div>
+
+      <div id="romance-prompt" class="hidden">
+        <div id="romance-question">Give her $50?</div>
+        <div id="romance-choices">
+          <button id="romance-yes" type="button"><kbd>Y</kbd> Yes</button>
+          <button id="romance-no" type="button"><kbd>N</kbd> No</button>
+        </div>
+      </div>
+
+      <!-- One bar for every wait in the game: the mechanic's five seconds, a
+           bus or a plane between cities, the shut door at the love house. -->
+      <div id="wait" class="hidden">
+        <div id="wait-label">WORKING</div>
+        <div id="wait-bar"><div id="wait-fill"></div></div>
+      </div>
+
+      <div id="toast-stack"></div>
+
+      <div id="start-screen">
+        <div class="start-card">
+          <p class="studio">From The Unified Theory</p>
+          <h1>POLY CITY</h1>
+          <p class="sub">Beta v<span id="app-version">—</span></p>
+          <!-- What the game is, not which key does what. Every binding that
+               used to be listed here is in the in-game CONTROLS panel, which
+               tracks the mode you are actually in (car, on foot, helicopter) —
+               so a static copy on the start card was both duplicated and, for
+               two of the three modes, wrong. -->
+          <ul class="brief">
+          <!--  <li>Carjack any passing car — each type has its own top speed, nitro tank and hull strength, and its driver will not take it well</li>
+            <li>Nitro burns fast: drive the blue orb chains to refill. On foot the same idea runs off a stamina meter</li>
+            <li>You start with the pistol — the machine gun and grenade launcher are out there to find, along with crates to restock ammo</li>
+            <li>Crashing damages the car (watch the <b>HULL</b> meter) — enough hits and it explodes</li>
+            <li>Lean on the horn and anyone in your way — on foot or behind the wheel — will scramble to clear it</li>
+            <li>The south-west corner is somebody else's turf — barred windows, junk in the yards, and a gang that turns out when you get close. Trouble finds you there and nowhere else, so go looking for it</li>
+            <li>Watch your <b>HEALTH</b> on foot, or take cover in a car — they carry different guns, and some can sprint</li>
+            <li>Every car has its own radio station — cycle through them with <b>-</b> and <b>=</b> while driving</li>
+            <li>Hit a ramp at speed to catch air — they rise and lower on their own, so timing is part of the fun</li>
+            <li>One set of ramps flanks the river — floor it to jump the gap, or wade through and pay for it</li>
+          -->
+          </ul> 
+          <button id="start-button">CLICK TO PLAY</button>
+          <p class="tiny desktop-only">Mouse is captured on start. Press <b>Esc</b> to release it.</p>
+          <p class="tiny touch-only">
+            On a phone: <b>stick</b> to drive or walk, <b>drag the view</b> to look around, buttons on
+            the right for everything else.
+          </p>
+
+          <div class="credits">
+            <p class="credit-row"><span class="credit-role">Executive producer</span> WolfWalker</p>
+            <p class="credit-row"><span class="credit-role">Co-producer / Senior Game Dev</span> R Dog</p>
+            <p class="credit-repo">
+              Like and follow our
+              <a
+                id="repo-link"
+                href="https://github.com/wolfatthegate/poly-city/"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub page for updates.</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div id="paused-screen" class="hidden">
+        <div class="paused-card">PAUSED — click to resume</div>
+      </div>
+
+      <div id="death-screen" class="hidden">
+        <div class="death-card">
+          <h1>YOU DIED</h1>
+          <p class="death-sub" id="death-sub">The car took one hit too many.</p>
+          <div id="death-countdown">
+            <span class="death-countdown-label">RESPAWN IN</span>
+            <span id="death-count">4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
