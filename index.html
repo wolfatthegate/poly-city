@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Poly City — Chapter 0</title>
+    <script type="module" crossorigin src="./assets/index-BPjTbLOc.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CeMpXw9w.css">
+  </head>
+  <body>
+    <canvas id="viewport"></canvas>
+
+    <!-- Sights. Everything in here is read against the 3D view rather than
+         against the HUD's panels: the crosshair marks where a shot lands, the
+         scope is the sight picture, and the lock bracket is drawn at a
+         projected world position. So this layer is sized to the canvas exactly
+         rather than to #hud, whose box is shorter than the canvas on a phone
+         to keep the panels above the control deck. Sharing that box put the
+         crosshair 89px above the shot on a 390x844 screen. -->
+    <div id="view-overlay">
+      <div id="crosshair" class="hidden">
+        <span class="ch ch-t"></span>
+        <span class="ch ch-b"></span>
+        <span class="ch ch-l"></span>
+        <span class="ch ch-r"></span>
+        <span class="ch-dot"></span>
+      </div>
+
+      <!-- The sniper's scope: a circular mask + mil-dot reticle while zoomed
+           in (see Game._updateSniperScope(), HUD.setScope()), plus the
+           "hold breath" meter Shift draws down to steady the sway. -->
+      <div id="scope-overlay" class="hidden">
+        <div id="scope-reticle">
+          <span class="sr-line sr-v"></span>
+          <span class="sr-line sr-h"></span>
+          <span class="sr-tick sr-tick-v t1"></span>
+          <span class="sr-tick sr-tick-v t2"></span>
+          <span class="sr-tick sr-tick-v t3"></span>
+          <span class="sr-tick sr-tick-v t4"></span>
+          <span class="sr-tick sr-tick-h t1"></span>
+          <span class="sr-tick sr-tick-h t2"></span>
+          <span class="sr-tick sr-tick-h t3"></span>
+          <span class="sr-tick sr-tick-h t4"></span>
+          <span class="sr-dot"></span>
+        </div>
+        <div id="scope-steady-row">
+          <div id="scope-steady-label">HOLD SHIFT TO STEADY</div>
+          <div id="scope-steady-bar"><div id="scope-steady-fill"></div></div>
+        </div>
+      </div>
+
+      <!-- F-16/Top-Gun style missile lock reticle: a bracket box the heli's
+           weapons drive onto whatever the seeker is tracking (see
+           Game._computeLockHudInfo()). Hidden until there's a candidate. Its
+           left/top come straight out of the camera's own projection, so it
+           belongs to this layer and not to the panels. -->
+      <div id="missile-lock" class="hidden">
+        <span class="lock-corner lock-tl"></span>
+        <span class="lock-corner lock-tr"></span>
+        <span class="lock-corner lock-bl"></span>
+        <span class="lock-corner lock-br"></span>
+        <div id="lock-text">TRACKING</div>
+      </div>
+    </div>
+
+    <!-- HUD overlay. All of it is pointer-events:none except the start screen. -->
+    <div id="hud">
+      <canvas id="minimap"></canvas>
+      <button id="map-button" type="button" title="City map (Tab)">MAP</button>
+      <div id="map-screen" class="hidden">
+        <div class="map-card">
+          <h2>POLY CITY</h2>
+          <canvas id="map-canvas"></canvas>
+          <p class="map-hint">Tab or click MAP to close</p>
+        </div>
+      </div>
+
+      <div id="radio" class="hidden">
+        <div id="radio-bars"><span></span><span></span><span></span></div>
+        <div id="radio-text">
+          <div id="radio-station">G-Funk Radio</div>
+          <div id="radio-track">NO SIGNAL</div>
+        </div>
+      </div>
+
+      <div id="speedo" class="panel">
+        <div class="speed-row">
+          <span id="speed-value">0</span>
+          <span id="speed-unit">km/h</span>
+        </div>
+        <div id="gear-row"><span id="gear">P</span></div>
+        <div id="throttle-bar"><div id="throttle-fill"></div></div>
+        <div id="car-type-row"><span id="car-type">Sedan</span></div>
+        <div id="nitro-row">
+          <div id="nitro-label">NITRO</div>
+          <div id="nitro-bar"><div id="nitro-fill"></div></div>
+        </div>
+        <div id="health-row">
+          <div id="health-label">HULL</div>
+          <div id="health-bar"><div id="health-fill"></div></div>
+        </div>
+        <div id="fuel-row" class="hidden">
+          <div id="fuel-label">FUEL</div>
+          <div id="fuel-bar"><div id="fuel-fill"></div></div>
+        </div>
+        <div id="stamina-row" class="hidden">
+          <div id="stamina-label">STAMINA</div>
+          <div id="stamina-bar"><div id="stamina-fill"></div></div>
+        </div>
+        <div id="player-health-row" class="hidden">
+          <div id="player-health-label">HEALTH</div>
+          <div id="player-health-bar"><div id="player-health-fill"></div></div>
+        </div>
+      </div>
+
+      <div id="ammo" class="panel">
+        <div id="money">
+          <span class="money-mark">$</span><span id="money-value">0</span>
+        </div>
+        <div class="ammo-row">
+          <div id="weapon-icon"></div>
+          <span id="mag">30</span><span class="ammo-sep">/</span><span id="reserve">90</span>
+        </div>
+        <div id="weapon-name">ASSAULT RIFLE</div>
+        <div id="reload-hint" class="hidden">RELOADING…</div>
+      </div>
+
+      <!-- The two reference panels share one row so that on a phone, where
+           they stack instead of sitting at opposite corners, opening one
+           pushes the other down rather than landing on top of it. Both fold
+           away to their title bar; see ui/Panels.js. -->
+      <div id="hud-panels">
+        <div id="controls" class="panel collapsible">
+          <button class="panel-head" type="button" data-panel="controls" data-desktop-only aria-expanded="true">
+            <span class="panel-title">CONTROLS</span>
+            <span class="panel-caret" aria-hidden="true"></span>
+          </button>
+          <div class="panel-body">
+            <ul id="controls-list"></ul>
+          </div>
+        </div>
+
+        <div id="stats" class="panel collapsible">
+          <button class="panel-head" type="button" data-panel="stats" aria-expanded="true">
+            <span class="panel-title">PICKUPS</span>
+            <span class="panel-caret" aria-hidden="true"></span>
+          </button>
+          <div class="panel-body">
+            <div><span class="k">Trash cans</span> <span id="targets-hit">0</span></div>
+            <div><span class="k">Ammo boxes</span> <span id="pickups-taken">0</span></div>
+            <div><span class="k">Nitro orbs</span> <span id="nitro-taken">0</span></div>
+            <div><span class="k">Weapons</span> <span id="weapons-found">1/3</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="romance-prompt" class="hidden">
+        <div id="romance-question">Give her $50?</div>
+        <div id="romance-choices">
+          <button id="romance-yes" type="button"><kbd>Y</kbd> Yes</button>
+          <button id="romance-no" type="button"><kbd>N</kbd> No</button>
+        </div>
+      </div>
+
+      <!-- One bar for every wait in the game: the mechanic's five seconds, a
+           bus or a plane between cities, the shut door at the love house. -->
+      <div id="wait" class="hidden">
+        <div id="wait-label">WORKING</div>
+        <div id="wait-bar"><div id="wait-fill"></div></div>
+      </div>
+
+      <!-- Shown while a held shot is running instead of the loading bar: three
+           small polygons turning over, one after another. A bar measures a
+           wait, and the blessing is not a wait — nothing is loading and there
+           is nothing to be impatient about. See HUD.setCinematic. -->
+      <div id="cinematic-mark" class="hidden" aria-hidden="true">
+        <i></i><i></i><i></i>
+      </div>
+
+      <div id="toast-stack"></div>
+
+      <!-- Bomb Defusal's always-on readout: the round clock and a compass
+           arrow pointing at the device — see HUD.setBombTimer/setBombArrow.
+           Hidden outside that mode and while travelling away from the city
+           the round is running in. -->
+      <div id="bomb-hud" class="hidden">
+        <div id="bomb-timer">1:30</div>
+        <div id="bomb-arrow-wrap">
+          <svg id="bomb-arrow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2 L19 15 L12 11.2 L5 15 Z" fill="currentColor" />
+          </svg>
+        </div>
+        <div id="bomb-score">DEFUSED <span id="bomb-score-value">0</span>/<span id="bomb-score-total">3</span></div>
+      </div>
+
+      <!-- Only up while standing inside the device's trigger radius — see
+           HUD.setBombPrompt. Shares the wait bar's slot in spirit (one prompt
+           at a time) but is its own element since it also needs a hold key. -->
+      <div id="bomb-prompt" class="hidden">
+        <div id="bomb-prompt-label"><kbd>E</kbd> HOLD TO DEFUSE</div>
+        <div id="bomb-prompt-bar"><div id="bomb-prompt-fill"></div></div>
+      </div>
+
+      <div id="mode-select-screen">
+        <div class="start-card mode-select-card">
+          <p class="studio">From The Unified Theory</p>
+          <h1>POLY CITY</h1>
+          <p class="sub">Choose a game mode</p>
+          <div id="mode-select-options">
+            <button id="mode-freeroam" type="button" class="mode-option">
+              <span class="mode-name">FREE ROAM</span>
+              <span class="mode-desc">Drive, shoot, explore — no clock, no objective.</span>
+            </button>
+            <button id="mode-bomb" type="button" class="mode-option">
+              <span class="mode-name">BOMB DEFUSAL</span>
+              <span class="mode-desc">Find the device before the timer runs out. Hold E to cut it.</span>
+            </button>
+            <button id="mode-zombies" type="button" class="mode-option">
+              <span class="mode-name">ZOMBIE SURVIVAL</span>
+              <span class="mode-desc">Escape the city. Fuel up, dodge the brutes, and get out alive.</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zombie Survival's always-on readout: survivors rescued so far. The
+           fuel bar lives in #speedo next to HULL instead (see #fuel-row) — it
+           is a car stat, the same as nitro, not a match-progress number. -->
+      <div id="zombie-hud" class="hidden">
+        <div id="zombie-score">SURVIVORS <span id="zombie-score-value">0</span>/<span id="zombie-score-total">6</span></div>
+      </div>
+
+      <!-- Up once the flare's been fired at the church — see
+           HUD.setEvacHold(). Sits right under #zombie-hud, same shape as
+           #bomb-hud's own clock. -->
+      <div id="evac-hold" class="hidden">
+        <div id="evac-hold-timer">1:00</div>
+        <div id="evac-hold-label">HOLD THE YARD</div>
+      </div>
+
+      <!-- Up only while standing at the church, flare not yet fired — see
+           HUD.setFlarePrompt(). A tap, not a hold, so no progress bar. -->
+      <div id="flare-prompt" class="hidden">
+        <div id="flare-prompt-label"><kbd>E</kbd> FIRE THE FLARE GUN</div>
+      </div>
+
+      <!-- Up only once the rescue chopper has actually landed and is still
+           waiting — see HUD.setHeliBoardPrompt(). Same shape as #flare-prompt. -->
+      <div id="heli-board-prompt" class="hidden">
+        <div id="heli-board-prompt-label"><kbd>F</kbd> BOARD THE HELICOPTER</div>
+      </div>
+
+      <!-- Up only while standing next to the flipped car — see
+           HUD.setFlipPrompt(). Same shape as #bomb-prompt/#refuel-prompt. -->
+      <div id="flip-prompt" class="hidden">
+        <div id="flip-prompt-label"><kbd>F</kbd> HOLD TO FLIP IT BACK</div>
+        <div id="flip-prompt-bar"><div id="flip-prompt-fill"></div></div>
+      </div>
+
+      <!-- Up only while standing at the pump — see HUD.setRefuelPrompt(). -->
+      <div id="refuel-prompt" class="hidden">
+        <div id="refuel-prompt-label"><kbd>E</kbd> HOLD TO PUMP FUEL</div>
+        <div id="refuel-prompt-bar"><div id="refuel-prompt-fill"></div></div>
+      </div>
+
+      <!-- Up for as long as the tank stays empty and driving — not a toast,
+           which would fade in a couple of seconds and be easy to miss over
+           the horde. See HUD.setOutOfFuelWarning(). -->
+      <div id="out-of-fuel-warning" class="hidden">OUT OF FUEL — FIND GAS TO KEEP DRIVING</div>
+
+      <div id="start-screen" class="hidden">
+        <div class="start-card">
+          <p class="studio">From The Unified Theory</p>
+          <h1>POLY CITY</h1>
+          <!-- The version doubles as the way into the history behind it: one
+               line per pull request that shipped, newest first. See
+               src/changelog.js, which the version workflow writes. -->
+          <p class="sub">
+            Beta v<span id="app-version">—</span>
+            <button id="version-button" type="button">WHAT'S NEW</button>
+          </p>
+          <!-- What the game is, not which key does what. Every binding that
+               used to be listed here is in the in-game CONTROLS panel, which
+               tracks the mode you are actually in (car, on foot, helicopter) —
+               so a static copy on the start card was both duplicated and, for
+               two of the three modes, wrong. -->
+          <ul class="brief">
+          <!--  <li>Carjack any passing car — each type has its own top speed, nitro tank and hull strength, and its driver will not take it well</li>
+            <li>Nitro burns fast: drive the blue orb chains to refill. On foot the same idea runs off a stamina meter</li>
+            <li>You start with the pistol — the machine gun and grenade launcher are out there to find, along with crates to restock ammo</li>
+            <li>Crashing damages the car (watch the <b>HULL</b> meter) — enough hits and it explodes</li>
+            <li>Lean on the horn and anyone in your way — on foot or behind the wheel — will scramble to clear it</li>
+            <li>The south-west corner is somebody else's turf — barred windows, junk in the yards, and a gang that turns out when you get close. Trouble finds you there and nowhere else, so go looking for it</li>
+            <li>Watch your <b>HEALTH</b> on foot, or take cover in a car — they carry different guns, and some can sprint</li>
+            <li>Every car has its own radio station — cycle through them with <b>-</b> and <b>=</b> while driving</li>
+            <li>Hit a ramp at speed to catch air — they rise and lower on their own, so timing is part of the fun</li>
+            <li>One set of ramps flanks the river — floor it to jump the gap, or wade through and pay for it</li>
+          -->
+          </ul> 
+          <button id="start-button">CLICK TO PLAY</button>
+          <p class="tiny desktop-only">Mouse is captured on start. Press <b>Esc</b> to release it.</p>
+          <p class="tiny touch-only">
+            On a phone: <b>stick</b> to drive or walk, <b>drag the view</b> to look around, buttons on
+            the right for everything else.
+          </p>
+
+          <div class="credits">
+            <p class="credit-row"><span class="credit-role">Executive producer</span> WolfWalker</p>
+            <p class="credit-row"><span class="credit-role">Co-producer / Senior Game Dev</span> R Dog</p>
+            <p class="credit-repo">
+              Like and follow our
+              <a
+                id="repo-link"
+                href="https://github.com/wolfatthegate/poly-city/"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub page for updates.</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div id="paused-screen" class="hidden">
+        <div class="paused-card">
+          PAUSED — click to resume
+          <!-- Its own click has to stop there: the card behind it resumes the
+               game, which is not what someone reaching for the changelog is
+               asking for. See HUD.bindStart(). -->
+          <button id="version-button-paused" type="button">WHAT'S NEW</button>
+        </div>
+      </div>
+
+      <!-- The version history, over both of the screens that open it rather
+           than inside either — a click in here must never reach the card
+           underneath and start or resume the game. Filled from src/changelog.js
+           by HUD.renderVersionHistory(). -->
+      <div id="version-screen" class="hidden">
+        <div class="version-card">
+          <h2 id="version-title">VERSION HISTORY</h2>
+          <p class="version-sub" id="version-sub">—</p>
+          <ol id="version-list"></ol>
+          <button id="version-close" type="button">CLOSE</button>
+        </div>
+      </div>
+
+      <div id="death-screen" class="hidden">
+        <div class="death-card">
+          <h1>YOU DIED</h1>
+          <p class="death-sub" id="death-sub">The car took one hit too many.</p>
+          <div id="death-countdown">
+            <span class="death-countdown-label">RESPAWN IN</span>
+            <span id="death-count">4</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bomb Defusal's match-end card — one screen for both outcomes, see
+           HUD.showBombResult(). The "lost" class retints it for a failure. -->
+      <div id="bomb-result-screen" class="hidden">
+        <div class="bomb-result-card" id="bomb-result-card">
+          <h1 id="bomb-result-title">CITY SAVED</h1>
+          <p class="bomb-result-sub" id="bomb-result-sub">All devices defused.</p>
+          <div class="bomb-result-actions">
+            <button id="bomb-retry-button" type="button">PLAY AGAIN</button>
+            <button id="bomb-return-button" type="button">RETURN TO START</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zombie Survival's match-end card — same shared shape as
+           #bomb-result-screen, kept as its own element rather than a shared
+           one so the two modes never have to agree on wording/timing. -->
+      <div id="zombie-result-screen" class="hidden">
+        <div class="bomb-result-card" id="zombie-result-card">
+          <h1 id="zombie-result-title">YOU ESCAPED</h1>
+          <p class="bomb-result-sub" id="zombie-result-sub">Out of the city.</p>
+          <div class="bomb-result-actions">
+            <button id="zombie-retry-button" type="button">TRY AGAIN</button>
+            <button id="zombie-return-button" type="button">RETURN TO START</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dev-only spawn menu — Shift+Right-click toggles it, see
+           HUD.bindDebugMenu()/setDebugMenuOpen() and Game._toggleDebugMenu(). -->
+      <div id="debug-menu-screen" class="hidden">
+        <div class="bomb-result-card" id="debug-menu-card">
+          <h1>DEBUG</h1>
+          <p class="bomb-result-sub">Zombie Survival only. Shift+Right-click to close.</p>
+          <div class="bomb-result-actions">
+            <button id="debug-spawn-brute-button" type="button">SPAWN BIG BEAST</button>
+            <button id="debug-menu-close-button" type="button">CLOSE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
