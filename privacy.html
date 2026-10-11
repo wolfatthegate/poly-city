@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shardtown Privacy Policy</title>
+    <!-- Static page, served as-is from public/ next to the game. Keep it in
+         step with what the build actually collects: if analytics, storage or
+         networking change (core/Analytics.js, ui/Panels.js, net/Network.js),
+         this page and its "Last updated" date change with them. -->
+    <style>
+      :root {
+        --bg: #12161c;
+        --fg: #dde3ea;
+        --muted: #8c97a4;
+        --accent: #7ef2a5;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+      h1 {
+        margin-bottom: 4px;
+      }
+      h2 {
+        margin-top: 32px;
+        font-size: 1.15rem;
+      }
+      .updated {
+        color: var(--muted);
+        margin-top: 0;
+      }
+      a {
+        color: var(--accent);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 8px;
+        border-bottom: 1px solid #2a323c;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      button {
+        cursor: pointer;
+        border: 1px solid var(--accent);
+        border-radius: 999px;
+        padding: 8px 16px;
+        font: inherit;
+        color: var(--accent);
+        background: transparent;
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Shardtown Privacy Policy</h1>
+      <p class="updated">Last updated: October 4, 2026</p>
+
+      <p>
+        Shardtown is a free browser game made by WolfAtTheGate LLC ("we", "us"). We don't have accounts,
+        we don't ask for your name or email, and we don't sell your data. This page explains the little
+        information that is collected when you play, and why.
+      </p>
+
+      <h2>What is collected</h2>
+      <table>
+        <tr>
+          <th>What</th>
+          <th>Who collects it</th>
+          <th>Why</th>
+        </tr>
+        <tr>
+          <td>
+            Usage statistics: pages viewed, session length, game events (like starting a mode), approximate
+            location (country, region, city), language, device, browser, screen size and the site that sent
+            you here
+          </td>
+          <td>Google Analytics, using cookies, only if you allow it</td>
+          <td>To see how many people play, where from, and which parts of the game they use</td>
+        </tr>
+        <tr>
+          <td>Your IP address and connection details, while you are in a multiplayer room</td>
+          <td>The other players in your room, and the public servers that help connect you (see below)</td>
+          <td>To connect your game directly to other players' games</td>
+        </tr>
+        <tr>
+          <td>Standard server logs, including your IP address</td>
+          <td>GitHub, which hosts the game</td>
+          <td>To serve and secure the website</td>
+        </tr>
+        <tr>
+          <td>Your interface preferences (which panels are open), the graphics quality the game settled on for your device, and your cookie choice</td>
+          <td>Your own browser only (local storage); never sent to us</td>
+          <td>So the game remembers your layout, and starts at a quality your device can run smoothly</td>
+        </tr>
+      </table>
+
+      <h2>Google Analytics</h2>
+      <p>
+        Google Analytics only runs if you choose "Allow" when the game asks. If you choose "No thanks", it
+        never loads and no analytics cookies are set. The game works the same either way.
+      </p>
+      <p>
+        When it runs, Google Analytics sets cookies in your browser and sends usage data to Google. Google
+        uses your IP address to estimate your location and does not show it to us. We never send Google
+        anything that identifies you personally. You can read
+        <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer"
+          >how Google uses this data</a
+        >.
+      </p>
+      <p>
+        <button id="reset-consent" type="button">Change my cookie choice</button>
+        <span id="reset-consent-done" hidden>Done. The game will ask again next time you open it.</span>
+      </p>
+
+      <h2>Multiplayer</h2>
+      <p>
+        Multiplayer is peer-to-peer: your game talks directly to the other players' games, not to a server
+        of ours. To find each other, games use the public Nostr relay network and public STUN servers.
+        Because of this, the other players in your room and those relay and STUN operators can see your IP
+        address. The only gameplay data shared is what the game needs to show you to others, such as your
+        position, vehicle and actions. Only join rooms with people you're comfortable sharing that with.
+        Multiplayer is off unless you create or join a room, which includes opening someone's room invite
+        link.
+      </p>
+
+      <h2>Hosting</h2>
+      <p>
+        The game is hosted on GitHub Pages. GitHub keeps logs of visits, including IP addresses, as described
+        in the
+        <a
+          href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
+          target="_blank"
+          rel="noopener noreferrer"
+          >GitHub Privacy Statement</a
+        >.
+      </p>
+
+      <h2>Children</h2>
+      <p>
+        Shardtown is not directed at children under 13, and we don't knowingly collect personal information
+        from them.
+      </p>
+
+      <h2>Your choices and rights</h2>
+      <p>
+        Because we don't have accounts and Google Analytics doesn't show us who you are, we usually can't
+        connect any data to you. Depending on where you live (for example the EU, UK or California), you may
+        have rights to access, delete or object to the use of your data. To ask about any of this, contact us
+        below and we'll help as far as we can. Clearing your browser's cookies and site data removes
+        everything stored on your device.
+      </p>
+
+      <h2>Changes</h2>
+      <p>
+        If the game starts collecting anything new, for example if we add accounts or ads, we'll update this
+        page and the date at the top before that change goes live.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        WolfAtTheGate LLC. Reach us by opening an issue on our
+        <a href="https://github.com/wolfatthegate/poly-city/issues" target="_blank" rel="noopener noreferrer"
+          >GitHub page</a
+        >.
+      </p>
+    </main>
+    <script>
+      // Same key as CONSENT_KEY in src/core/Analytics.js. Clearing it makes the
+      // game ask again; analytics already loaded in an open tab stays until reload.
+      document.getElementById('reset-consent').addEventListener('click', () => {
+        try {
+          localStorage.removeItem('shardtown.analyticsConsent.v1');
+        } catch {}
+        document.getElementById('reset-consent-done').hidden = false;
+      });
+    </script>
+  </body>
+</html>
