@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Sharktown has moved</title>
+    <meta name="description" content="Sharktown has moved to https://wolfatthegate.github.io/sharktown/" />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="https://wolfatthegate.github.io/sharktown/" />
+    <style>
+      :root {
+        --text: #eef3f8;
+        --dim: #9fb0c2;
+        --accent: #7ef2a5;
+        --warn: #ff8b5e;
+        --border: rgba(255, 255, 255, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #0a0d12;
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+
+      /* The city behind the card, the way the game's start screen sits over it. */
+      .city {
+        position: fixed;
+        inset: -24px;
+        background: url("/poly-city/city.png") center / cover no-repeat;
+        filter: blur(3px) saturate(1.1);
+      }
+
+      .shade {
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at center, rgba(6, 9, 14, 0.55), rgba(6, 9, 14, 0.9) 75%),
+          rgba(6, 9, 14, 0.35);
+      }
+
+      main {
+        position: relative;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 460px;
+        padding: 34px 40px;
+        text-align: center;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: rgba(12, 16, 22, 0.82);
+        box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.9);
+        animation: card-in 0.5s cubic-bezier(0.2, 1.2, 0.3, 1) backwards;
+      }
+
+      .studio {
+        margin: 0 0 6px;
+        color: var(--dim);
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 29px;
+        letter-spacing: 4px;
+      }
+
+      .tag {
+        display: inline-block;
+        margin: 14px 0 0;
+        padding: 1px 9px;
+        border: 1px solid var(--warn);
+        border-radius: 999px;
+        color: var(--warn);
+        font-size: 9.5px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      p.msg {
+        margin: 16px 0 0;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      p.soon {
+        margin: 8px 0 0;
+        color: var(--dim);
+        font-size: 13px;
+      }
+
+      .go {
+        display: block;
+        margin: 26px 0 0;
+        padding: 15px 24px;
+        border: 1px solid rgba(126, 242, 165, 0.45);
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(126, 242, 165, 0.16), rgba(126, 242, 165, 0.06));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 10px 22px -14px rgba(0, 0, 0, 0.9);
+        color: var(--text);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: transform 0.2s cubic-bezier(0.2, 1.7, 0.4, 1), box-shadow 0.18s ease, border-color 0.18s ease;
+      }
+
+      .go:hover,
+      .go:focus-visible {
+        border-color: var(--accent);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 22px -4px rgba(126, 242, 165, 0.55);
+        transform: translateY(-1px);
+        outline: none;
+      }
+
+      .url {
+        margin: 12px 0 0;
+        color: var(--dim);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+
+      @keyframes card-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+      }
+
+      @media (max-width: 420px) {
+        .card {
+          padding: 28px 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="city" aria-hidden="true"></div>
+    <div class="shade" aria-hidden="true"></div>
+    <main>
+      <div class="card">
+        <p class="studio">From WolfAtTheGate</p>
+        <h1>SHARKTOWN</h1>
+        <span class="tag">Moved</span>
+        <p class="msg">The Sharktown page has moved to a new address.</p>
+        <p class="soon">This page will be taken down soon. Please update your bookmarks.</p>
+        <a id="go" class="go" href="https://wolfatthegate.github.io/sharktown/">Click Here</a>
+        <p class="url" id="url">wolfatthegate.github.io/sharktown/</p>
+      </div>
+    </main>
+    <script>
+      // Keep whatever followed the old address: a page under it (terms.html,
+      // privacy.html), and the query and hash a multiplayer room link carries.
+      (function () {
+        var NEW_BASE = 'https://wolfatthegate.github.io/sharktown/';
+        var rest = location.pathname.replace(/^\/poly-city\/?/, '');
+        if (rest === 'index.html') rest = '';
+        var target = NEW_BASE + rest + location.search + location.hash;
+        document.getElementById('go').href = target;
+        document.getElementById('url').textContent = target.replace(/^https:\/\//, '');
+      })();
+    </script>
+  </body>
+</html>
